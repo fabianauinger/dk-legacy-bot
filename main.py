@@ -33,7 +33,7 @@ async def on_member_remove(member):
     guild = member.guild
     channel = guild.get_channel(DEPARTURES_CHANNEL_ID)
     if channel:
-        await channel.send(f"👋 {member.name} has unfortunately left DK Legacy.")
+        await channel.send(f"👋 {member.name} has left DK Legacy.")
 
         from discord.ext import commands
 

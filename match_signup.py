@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 
 
 DEV_CHANNEL_ID = 1366432462284128276
+TICK_LOGGING_CHANNEL_ID = 1366458949657690123
 
 class MatchSignup(commands.Cog):
 
@@ -40,6 +41,7 @@ class MatchSignup(commands.Cog):
             # ❌ User muss wechseln
             self.remove_from_all(user)
             self.accepted.append(user)
+            await self.log_action(interaction, button.label)
             await interaction.response.edit_message(embed=self.build_embed())
 
 
@@ -51,6 +53,7 @@ class MatchSignup(commands.Cog):
                 return
             self.remove_from_all(user)
             self.declined.append(user)
+            await self.log_action(interaction, button.label)
             await interaction.response.edit_message(embed=self.build_embed())
 
         @discord.ui.button(label="❓", style=discord.ButtonStyle.primary)
@@ -61,6 +64,7 @@ class MatchSignup(commands.Cog):
                 return
             self.remove_from_all(user)
             self.tentatived.append(user)
+            await self.log_action(interaction, button.label)
             await interaction.response.edit_message(embed=self.build_embed())
 
 
@@ -123,3 +127,13 @@ class MatchSignup(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(MatchSignup(bot))
+
+async def log_action(self, interaction: discord.Interaction, action: str):
+    log_channel = interaction.guild.get_channel(TICK_LOGGING_CHANNEL_ID)
+    if log_channel:
+        await log_channel.send(
+            f"🛎️ [{self.match_title}] - {interaction.user.name} hat auf {action} geklickt!."
+        )
+
+
+
