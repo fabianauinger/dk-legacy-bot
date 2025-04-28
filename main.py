@@ -1,9 +1,6 @@
 import discord
 import os
 from discord.ext import commands
-from keep_alive import keep_alive
-
-keep_alive()  # Keep the bot alive
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -37,7 +34,7 @@ async def on_member_remove(member):
     guild = member.guild
     channel = guild.get_channel(DEPARTURES_CHANNEL_ID)
     if channel:
-        await channel.send(f"👋 {member.name} has left DK Legacy.")
+        await channel.send(f"👋 {member.name} has unfortunately left DK Legacy.")
 
 
 bot.run(DISCORD_TOKEN)
