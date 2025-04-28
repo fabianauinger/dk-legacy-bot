@@ -28,21 +28,28 @@ async def on_ready():
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
     
-    # Matches laden und Views wieder registrieren
-    if os.path.exists(SESSIONS_FILE):
-        with open(SESSIONS_FILE, "r") as f:
-            sessions = json.load(f)
+    # Sessions laden und Views wieder registrieren
+    sessions = load_sessions()
+    for session in sessions:
+        view = SignupView(
+            title=session["title"],
+            match_text=session["id_suffix"]
+        )
+        if view:
+            bot.add_view(view)
+            print(f"Registered persistent view for {session['title']}")
+        else:
+            print(f"Session not found: {session['title']}")
 
-        for session in sessions:
-            view = SignupView(
-                title=session["title"],
-                match_text=session["id_suffix"]
-            )
-            if view:
-                bot.add_view(view)
-                print(f"Registered persistent view for {session['title']}")
-            else:
-                print(f"Session not found: {session['title']}")
+
+async def load_sessions():
+    if not os.path.exists(SESSIONS_FILE):
+        return []
+    try:
+        with open(SESSIONS_FILE, "r") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return []
 
 
 @bot.event
