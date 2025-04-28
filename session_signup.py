@@ -42,7 +42,7 @@ class SessionSignup(commands.Cog):
 
             id_suffix = title.lower().replace(" ", "_").replace("-", "_")
 
-            view = self.SignupView(title, smart_text, timestamp_text)
+            view = SignupView(title, smart_text, timestamp_text)
             embed = view.build_embed()
             await ctx.send(embed=embed, view=view)
             save_match(title, id_suffix)
