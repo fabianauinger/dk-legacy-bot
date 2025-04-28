@@ -3,7 +3,7 @@ import os
 import json
 from discord.ext import commands
 from signup_view import SignupView
-
+from zoneinfo import ZoneInfo
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -25,12 +25,13 @@ async def on_ready():
     log_channel = bot.get_channel(DEPLOYMENT_LOGGING_CHANNEL_ID)
     if log_channel:
         from datetime import datetime
-        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
+        now = datetime.now(ZoneInfo("Europe/Berlin"))
+        timestamp = now.strftime("%d.%m.%Y %H:%M")
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
     
     # Sessions laden und Views wieder registrieren
     sessions = await load_sessions()
-    for session in sessions:
+    for session in sessions:    
         view = SignupView(
             title=session["title"],
             match_text=session["id_suffix"]

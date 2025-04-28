@@ -5,8 +5,7 @@ from discord.ext import commands
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from signup_view import SignupView
-
-
+from session_utils import save_session
 
 DEV_CHANNEL_ID = 1366432462284128276
 SESSIONS_FILE = "sessions.json"
@@ -45,7 +44,7 @@ class SessionSignup(commands.Cog):
             view = SignupView(title, smart_text, timestamp_text)
             embed = view.build_embed()
             await ctx.send(embed=embed, view=view)
-            save_match(title, id_suffix)
+            save_session(title, id_suffix)
 
             if ctx.channel.id != DEV_CHANNEL_ID:
                 await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅ (wenn außerhalb des dev-channels)
@@ -54,21 +53,6 @@ class SessionSignup(commands.Cog):
             await ctx.send(
                 "⚠️ Bitte gib das Datum und die Uhrzeit im Format `DD.MM.YYYY HH:MM` an!"
             )
-
-        def save_match(title, id_suffix):
-            if os.path.exists(SESSIONS_FILE):
-                with open(SESSIONS_FILE, "r") as f:
-                    matches = json.load(f)
-            else:
-                matches = []
-
-            matches.append({
-                "title": title,
-                "id_suffix": id_suffix
-            })
-
-            with open(SESSIONS_FILE, "w") as f:
-                json.dump(matches, f, indent=4)
 
 
 async def setup(bot):
