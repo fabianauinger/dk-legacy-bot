@@ -86,4 +86,4 @@ class SignupView(discord.ui.View):
         match_text = "React to join!"  # Standardtext
         timestamp_text = None  # Ohne genaue Uhrzeit beim Wiederherstellen
 
-        return cls(title, match_text, id_suffix, timestamp_text)
+        return cls(title, id_suffix)

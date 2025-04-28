@@ -38,6 +38,7 @@ async def on_ready():
             print(f'EVENT: {id_suffix}')
             # Hier musst du dann deine SessionViews neu registrieren
             view = SignupView.load_from_id_suffix(id_suffix)
+            print(f'view {view}')
             bot.add_view(view)
 
 
