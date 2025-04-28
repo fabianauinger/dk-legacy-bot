@@ -13,10 +13,13 @@ def save_session(title, id_suffix):
             except json.JSONDecodeError:
                 sessions = []
 
+    
+    print(f'Sessions: {sessions}')
     sessions.append({
         "title": title,
         "id_suffix": id_suffix
     })
+    print(f'Sessions: {sessions}')
 
     with open(SESSIONS_FILE, "w") as f:
         json.dump(sessions, f, indent=4)
