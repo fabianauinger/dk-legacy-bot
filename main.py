@@ -16,12 +16,12 @@ DEPLOYMENT_LOGGING_CHANNEL_ID = 1366461721098715186
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
+    await bot.load_extension("match_signup")
     log_channel = bot.get_channel(DEPLOYMENT_LOGGING_CHANNEL_ID)
     if log_channel:
         from datetime import datetime
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
-
 
 
 @bot.event
@@ -32,7 +32,6 @@ async def on_member_join(member):
         await channel.send(
             f"✈️ Welcome aboard, {member.mention}! Get ready to leave your mark at DK Legacy! ⚡"
         )
-
 
 @bot.event
 async def on_member_remove(member):
