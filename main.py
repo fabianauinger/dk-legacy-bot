@@ -12,7 +12,6 @@ DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
 ARRIVALS_CHANNEL_ID = 1365770366819242045
 DEPARTURES_CHANNEL_ID = 1366018627584655481
 
-
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
@@ -43,7 +42,6 @@ async def on_member_remove(member):
 @commands.has_permissions(manage_messages=True)
 async def clearall(ctx):
     await ctx.channel.purge()
-    confirmation = await ctx.send("🧹 Channel wurde geleert!", delete_after=3)
 
 
 

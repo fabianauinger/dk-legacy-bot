@@ -4,6 +4,8 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 
+DEV_CHANNEL_ID = 1366432462284128276
+
 class MatchSignup(commands.Cog):
 
     def __init__(self, bot):
@@ -101,7 +103,8 @@ class MatchSignup(commands.Cog):
             embed = view.build_embed()
             await ctx.send(embed=embed, view=view)
 
-            await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅
+            if ctx.channel.id != DEV_CHANNEL_ID:
+                await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅ (nur wenn außerhalb des dev-channels)
 
         except ValueError:
             await ctx.send(
