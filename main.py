@@ -39,7 +39,7 @@ async def on_member_remove(member):
         from discord.ext import commands
 
 # Achtung: Nur User mit "Nachrichten verwalten"-Rechten dürfen den Befehl benutzen
-@commands.command()
+@bot.command()
 @commands.has_permissions(manage_messages=True)
 async def clearall(ctx):
     await ctx.channel.purge()
