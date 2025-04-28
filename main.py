@@ -1,6 +1,8 @@
 import discord
 import os
+import json
 from discord.ext import commands
+from session_signup import SignupView
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -13,15 +15,33 @@ ARRIVALS_CHANNEL_ID = 1365770366819242045
 DEPARTURES_CHANNEL_ID = 1366018627584655481
 DEPLOYMENT_LOGGING_CHANNEL_ID = 1366461721098715186
 
+SESSIONS_FILE = "sessions.json"
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    await bot.load_extension("match_signup")
+    await bot.load_extension("session_signup")
     log_channel = bot.get_channel(DEPLOYMENT_LOGGING_CHANNEL_ID)
     if log_channel:
         from datetime import datetime
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
+    
+    # Matches laden und Views wieder registrieren
+    if os.path.exists(SESSIONS_FILE):
+        with open(SESSIONS_FILE, "r") as f:
+            sessions = json.load(f)
+
+        for session in sessions:
+            view = SignupView(
+                title=session["title"],
+                match_text=session["id_suffix"]
+            )
+            if view:
+                bot.add_view(view)
+                print(f"Registered persistent view for {session['title']}")
+            else:
+                print(f"Session not found: {session['title']}")
 
 
 @bot.event

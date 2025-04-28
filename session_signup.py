@@ -1,4 +1,6 @@
 import discord
+import json
+import os
 from discord.ext import commands
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -6,15 +8,16 @@ from zoneinfo import ZoneInfo
 
 DEV_CHANNEL_ID = 1366432462284128276
 TICK_LOGGING_CHANNEL_ID = 1366458949657690123
+SESSIONS_FILE = "sessions.json"
 
-class MatchSignup(commands.Cog):
+class SessionSignup(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
     class SignupView(discord.ui.View):
 
-        def __init__(self, title, match_text, timestamp_text=None):
+        def __init__(self, title, match_text, id_suffix, timestamp_text=None):
             super().__init__(timeout=None)
             self.accepted = []
             self.declined = []
@@ -22,6 +25,7 @@ class MatchSignup(commands.Cog):
             self.match_title = title
             self.match_text = match_text
             self.timestamp_text = timestamp_text
+            self.id_suffix = id_suffix 
 
         def remove_from_all(self, username):
             if username in self.accepted:
@@ -31,7 +35,7 @@ class MatchSignup(commands.Cog):
             if username in self.tentatived:
                 self.tentatived.remove(username)
 
-        @discord.ui.button(label="✅", style=discord.ButtonStyle.success)
+        @discord.ui.button(label="✅", style=discord.ButtonStyle.success, custom_id="signup_accept_{self.id_suffix}")
         async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
             user = interaction.user.name
             if user in self.accepted:
@@ -45,7 +49,7 @@ class MatchSignup(commands.Cog):
             await interaction.response.edit_message(embed=self.build_embed())
 
 
-        @discord.ui.button(label="❌", style=discord.ButtonStyle.danger)
+        @discord.ui.button(label="❌", style=discord.ButtonStyle.danger, custom_id="signup_decline_{self.id_suffix}")
         async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
             user = interaction.user.name
             if user in self.declined:
@@ -56,7 +60,7 @@ class MatchSignup(commands.Cog):
             await self.log_action(interaction, button.label)
             await interaction.response.edit_message(embed=self.build_embed())
 
-        @discord.ui.button(label="❓", style=discord.ButtonStyle.primary)
+        @discord.ui.button(label="❓", style=discord.ButtonStyle.primary, custom_id="signup_tentative_{self.id_suffix}")
         async def tentative(self, interaction: discord.Interaction, button: discord.ui.Button):
             user = interaction.user.name
             if user in self.tentatived:
@@ -98,7 +102,7 @@ class MatchSignup(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def creatematch(self,
+    async def createsession(self,
                           ctx,
                           title: str,
                           date: str,
@@ -120,21 +124,39 @@ class MatchSignup(commands.Cog):
             # Beschreibung formatieren
             smart_text = match_text.replace("|", "\n").strip()
 
+            id_suffix = title.lower().replace(" ", "_").replace("-", "_")
+
             view = self.SignupView(title, smart_text, timestamp_text)
             embed = view.build_embed()
             await ctx.send(embed=embed, view=view)
+            save_match(title, id_suffix)
 
             if ctx.channel.id != DEV_CHANNEL_ID:
-                await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅ (nur wenn außerhalb des dev-channels)
+                await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅ (wenn außerhalb des dev-channels)
 
         except ValueError:
             await ctx.send(
                 "⚠️ Bitte gib das Datum und die Uhrzeit im Format `DD.MM.YYYY HH:MM` an!"
             )
 
+        def save_match(title, id_suffix):
+            if os.path.exists(SESSIONS_FILE):
+                with open(SESSIONS_FILE, "r") as f:
+                    matches = json.load(f)
+            else:
+                matches = []
+
+            matches.append({
+                "title": title,
+                "id_suffix": id_suffix
+            })
+
+            with open(SESSIONS_FILE, "w") as f:
+                json.dump(matches, f, indent=4)
+
 
 async def setup(bot):
-    await bot.add_cog(MatchSignup(bot))
+    await bot.add_cog(SessionSignup(bot))
 
 
 
