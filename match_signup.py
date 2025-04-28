@@ -93,11 +93,11 @@ class MatchSignup(commands.Cog):
             log_channel = interaction.guild.get_channel(TICK_LOGGING_CHANNEL_ID)
             if log_channel:
                 await log_channel.send(
-                    f"🛎️ [{self.match_title}] - {interaction.user.name} hat auf {action} geklickt!."
+                    f"[{self.match_title}] - {interaction.user.name} hat auf {action} geklickt!."
                 )
 
     @commands.command()
-    @commands.has_permissions(administator=True)
+    @commands.has_permissions(administrator=True)
     async def creatematch(self,
                           ctx,
                           title: str,
