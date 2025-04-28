@@ -15,6 +15,7 @@ DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
 ARRIVALS_CHANNEL_ID = 1365770366819242045
 DEPARTURES_CHANNEL_ID = 1366018627584655481
 DEPLOYMENT_LOGGING_CHANNEL_ID = 1366461721098715186
+EVENTS_CHANNEL_ID = 1366482974270558320
 
 SESSIONS_FILE = "sessions.json"
 
@@ -30,17 +31,13 @@ async def on_ready():
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
     
     # Sessions laden und Views wieder registrieren
-    sessions = await load_sessions()
-    for session in sessions:    
-        view = SignupView(
-            title=session["title"],
-            match_text=session["id_suffix"]
-        )
-        if view:
+    event_channel = bot.get_channel(EVENTS_CHANNEL_ID)
+    if event_channel:
+        async for message in event_channel.history(limit=100):  # Oder mehr, wenn nötig
+            id_suffix = message.content.strip()
+            # Hier musst du dann deine SessionViews neu registrieren
+            view = SignupView.load_from_id_suffix(id_suffix)
             bot.add_view(view)
-            print(f"Registered persistent view for {session['title']}")
-        else:
-            print(f"Session not found: {session['title']}")
 
 
 async def load_sessions():

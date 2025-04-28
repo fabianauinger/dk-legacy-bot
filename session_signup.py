@@ -5,9 +5,9 @@ from discord.ext import commands
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from signup_view import SignupView
-from session_utils import save_session
 
 DEV_CHANNEL_ID = 1366432462284128276
+EVENTS_CHANNEL_ID = 1366482974270558320
 SESSIONS_FILE = "sessions.json"
 
 class SessionSignup(commands.Cog):
@@ -44,7 +44,12 @@ class SessionSignup(commands.Cog):
             view = SignupView(title, smart_text, timestamp_text)
             embed = view.build_embed()
             await ctx.send(embed=embed, view=view)
-            save_session(title, id_suffix)
+
+            # Speichere das Event im Event Channel
+            event_channel = self.bot.get_channel(EVENTS_CHANNEL_ID)
+            if event_channel:
+                await event_channel.send(id_suffix)
+
 
             if ctx.channel.id != DEV_CHANNEL_ID:
                 await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅ (wenn außerhalb des dev-channels)
