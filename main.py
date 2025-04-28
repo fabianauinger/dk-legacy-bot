@@ -72,29 +72,26 @@ async def clearall(ctx):
 async def load_sessions_from_channel(bot):
     events_channel = bot.get_channel(EVENTS_CHANNEL_ID)
     if not events_channel:
-        print("❌ Events-Channel nicht gefunden.")
+        print("⚠️ Kein Events-Channel gefunden.")
         return
 
-    async for message in events_channel.history(limit=100):  # Je nachdem wie viele Events du hast
-        try:
-            print(f"EVENT: {message}")
-            lines = message.content.split("\n")
-            data = {}
-            for line in lines:
-                key, value = line.split(": ", 1)
-                data[key] = value
+    # Nachrichten durchgehen
+    async for message in events_channel.history(limit=50):  # oder limit=None für alle
+        if message.author.bot and message.content.startswith("id_suffix:"):
+            try:
+                lines = message.content.splitlines()
+                id_suffix = lines[0].split(": ", 1)[1]
+                title = lines[1].split(": ", 1)[1]
+                match_text = lines[2].split(": ", 1)[1].replace("|", "\n")
+                timestamp_text = lines[3].split(": ", 1)[1]
 
-            id_suffix = data["id_suffix"]
-            title = data["title"]
-            match_text = data["match_text_raw"].replace("|", "\n")
-            timestamp_text = data["timestamp_text"]
+                # Neue View erstellen und registrieren
+                view = SignupView(title, match_text, id_suffix, timestamp_text)
+                bot.add_view(view)
 
-            view = SignupView(title, match_text, id_suffix, timestamp_text)
-            bot.add_view(view)
-
-            print(f"✅ Session {title} geladen!")
-        except Exception as e:
-            print(f"⚠️ Fehler beim Laden einer Session: {e}")
+                print(f"✅ Session {title} geladen und View registriert!")
+            except Exception as e:
+                print(f"⚠️ Fehler beim Laden einer Session: {e}")
 
 
 
