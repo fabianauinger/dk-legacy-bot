@@ -86,7 +86,7 @@ async def load_sessions_from_channel(bot):
 
             id_suffix = data["id_suffix"]
             title = data["title"]
-            match_text = data["match_text"].replace("|", "\n")  # falls du '|' benutzt hast
+            match_text = data["match_text_raw"].replace("|", "\n")
             timestamp_text = data["timestamp_text"]
 
             view = SignupView(title, match_text, id_suffix, timestamp_text)

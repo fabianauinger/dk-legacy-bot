@@ -51,11 +51,8 @@ class SessionSignup(commands.Cog):
                 await events_channel.send(
                     f"id_suffix: {id_suffix}\n"
                     f"title: {title}\n"
-                    f"match_text: {smart_text}\n"
-                    f"timestamp_text: {timestamp_text}"
-    )
-
-
+                    f"match_text_raw: {match_text.replace('\n', '|')}\n"
+                    f"timestamp_text: {timestamp_text}")
 
             if ctx.channel.id != DEV_CHANNEL_ID:
                 await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅ (wenn außerhalb des dev-channels)
