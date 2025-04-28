@@ -97,6 +97,7 @@ class MatchSignup(commands.Cog):
                 )
 
     @commands.command()
+    @commands.has_permissions(administator=True)
     async def creatematch(self,
                           ctx,
                           title: str,
