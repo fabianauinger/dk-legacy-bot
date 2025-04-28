@@ -35,6 +35,7 @@ async def on_ready():
     if event_channel:
         async for message in event_channel.history(limit=100):  # Oder mehr, wenn nötig
             id_suffix = message.content.strip()
+            print(f'EVENT: {id_suffix}')
             # Hier musst du dann deine SessionViews neu registrieren
             view = SignupView.load_from_id_suffix(id_suffix)
             bot.add_view(view)
