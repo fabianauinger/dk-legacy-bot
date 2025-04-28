@@ -79,11 +79,6 @@ class SignupView(discord.ui.View):
             )
 
     @classmethod
-    def load_from_id_suffix(cls, id_suffix):
-        print(f'id_suffix  {id_suffix}')
-        # Hier definierst du, wie eine Session beim Bot-Start aus einem ID-Suffix gebaut wird
-        title = id_suffix.replace("_", " ").title()  # Z.B. "crylupus_cup" ➔ "Crylupus Cup"
-        match_text = "React to join!"  # Standardtext
-        timestamp_text = None  # Ohne genaue Uhrzeit beim Wiederherstellen
+    def load_from_id_suffix(cls, title, match_text, id_suffix, timestamp_text=None):
+        return cls(title, match_text, id_suffix, timestamp_text)
 
-        return cls(title, id_suffix)

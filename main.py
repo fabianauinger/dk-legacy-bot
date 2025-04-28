@@ -31,15 +31,8 @@ async def on_ready():
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
     
     # Sessions laden und Views wieder registrieren
-    event_channel = bot.get_channel(EVENTS_CHANNEL_ID)
-    if event_channel:
-        async for message in event_channel.history(limit=100):  # Oder mehr, wenn nötig
-            id_suffix = message.content.strip()
-            print(f'EVENT: {id_suffix}')
-            # Hier musst du dann deine SessionViews neu registrieren
-            view = SignupView.load_from_id_suffix(id_suffix)
-            print(f'view {view}')
-            bot.add_view(view)
+    await load_sessions_from_channel(bot)
+
 
 
 async def load_sessions():
@@ -75,6 +68,33 @@ async def on_member_remove(member):
 @commands.has_permissions(manage_messages=True)
 async def clearall(ctx):
     await ctx.channel.purge()
+
+async def load_sessions_from_channel(bot):
+    events_channel = bot.get_channel(EVENTS_CHANNEL_ID)
+    if not events_channel:
+        print("❌ Events-Channel nicht gefunden.")
+        return
+
+    async for message in events_channel.history(limit=100):  # Je nachdem wie viele Events du hast
+        try:
+            print(f"EVENT: {message}")
+            lines = message.content.split("\n")
+            data = {}
+            for line in lines:
+                key, value = line.split(": ", 1)
+                data[key] = value
+
+            id_suffix = data["id_suffix"]
+            title = data["title"]
+            match_text = data["match_text"].replace("|", "\n")  # falls du '|' benutzt hast
+            timestamp_text = data["timestamp_text"]
+
+            view = SignupView(title, match_text, id_suffix, timestamp_text)
+            bot.add_view(view)
+
+            print(f"✅ Session {title} geladen!")
+        except Exception as e:
+            print(f"⚠️ Fehler beim Laden einer Session: {e}")
 
 
 

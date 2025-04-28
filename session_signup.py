@@ -46,9 +46,15 @@ class SessionSignup(commands.Cog):
             await ctx.send(embed=embed, view=view)
 
             # Speichere das Event im Event Channel
-            event_channel = self.bot.get_channel(EVENTS_CHANNEL_ID)
-            if event_channel:
-                await event_channel.send(id_suffix)
+            events_channel = ctx.guild.get_channel(EVENTS_CHANNEL_ID)
+            if events_channel:
+                await events_channel.send(
+                    f"id_suffix: {id_suffix}\n"
+                    f"title: {title}\n"
+                    f"match_text: {smart_text}\n"
+                    f"timestamp_text: {timestamp_text}"
+    )
+
 
 
             if ctx.channel.id != DEV_CHANNEL_ID:
