@@ -13,36 +13,51 @@ class SignupView(discord.ui.View):
         self.timestamp_text = timestamp_text
         self.id_suffix = id_suffix
 
-        # Dynamische Buttons erstellen
+        # Buttons erstellen und Callback setzen
         self.add_buttons()
 
     def add_buttons(self):
-        self.add_item(discord.ui.Button(label="✅", style=discord.ButtonStyle.success, custom_id=f"signup_accept_{self.id_suffix}"))
-        self.add_item(discord.ui.Button(label="❌", style=discord.ButtonStyle.danger, custom_id=f"signup_decline_{self.id_suffix}"))
-        self.add_item(discord.ui.Button(label="❓", style=discord.ButtonStyle.primary, custom_id=f"signup_tentative_{self.id_suffix}"))
+        accept_button = discord.ui.Button(
+            label="✅", style=discord.ButtonStyle.success, custom_id=f"signup_accept_{self.id_suffix}"
+        )
+        decline_button = discord.ui.Button(
+            label="❌", style=discord.ButtonStyle.danger, custom_id=f"signup_decline_{self.id_suffix}"
+        )
+        tentative_button = discord.ui.Button(
+            label="❓", style=discord.ButtonStyle.primary, custom_id=f"signup_tentative_{self.id_suffix}"
+        )
 
-    async def interaction_check(self, interaction: discord.Interaction):
-        custom_id = interaction.data["custom_id"]
+        accept_button.callback = self.accept_callback
+        decline_button.callback = self.decline_callback
+        tentative_button.callback = self.tentative_callback
+
+        self.add_item(accept_button)
+        self.add_item(decline_button)
+        self.add_item(tentative_button)
+
+    async def accept_callback(self, interaction: discord.Interaction):
         user = interaction.user.name
-
-        if f"accept_{self.id_suffix}" in custom_id:
-            if user not in self.accepted:
-                self.remove_from_all(user)
-                self.accepted.append(user)
-                await self.log_action(interaction, "✅")
-        elif f"decline_{self.id_suffix}" in custom_id:
-            if user not in self.declined:
-                self.remove_from_all(user)
-                self.declined.append(user)
-                await self.log_action(interaction, "❌")
-        elif f"tentative_{self.id_suffix}" in custom_id:
-            if user not in self.tentatived:
-                self.remove_from_all(user)
-                self.tentatived.append(user)
-                await self.log_action(interaction, "❓")
-
+        if user not in self.accepted:
+            self.remove_from_all(user)
+            self.accepted.append(user)
+            await self.log_action(interaction, "✅")
         await interaction.response.edit_message(embed=self.build_embed())
-        return True
+
+    async def decline_callback(self, interaction: discord.Interaction):
+        user = interaction.user.name
+        if user not in self.declined:
+            self.remove_from_all(user)
+            self.declined.append(user)
+            await self.log_action(interaction, "❌")
+        await interaction.response.edit_message(embed=self.build_embed())
+
+    async def tentative_callback(self, interaction: discord.Interaction):
+        user = interaction.user.name
+        if user not in self.tentatived:
+            self.remove_from_all(user)
+            self.tentatived.append(user)
+            await self.log_action(interaction, "❓")
+        await interaction.response.edit_message(embed=self.build_embed())
 
     def remove_from_all(self, username):
         if username in self.accepted:
@@ -81,4 +96,3 @@ class SignupView(discord.ui.View):
     @classmethod
     def load_from_id_suffix(cls, title, match_text, id_suffix, timestamp_text=None):
         return cls(title, match_text, id_suffix, timestamp_text)
-
