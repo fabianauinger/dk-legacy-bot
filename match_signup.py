@@ -14,7 +14,7 @@ class MatchSignup(commands.Cog):
     class SignupView(discord.ui.View):
 
         def __init__(self, title, match_text, timestamp_text=None):
-            super().__init__()
+            super().__init__(timeout=None)
             self.accepted = []
             self.declined = []
             self.tentatived = []
@@ -30,30 +30,39 @@ class MatchSignup(commands.Cog):
             if username in self.tentatived:
                 self.tentatived.remove(username)
 
-        @discord.ui.button(label="✅ Accept", style=discord.ButtonStyle.success)
-        async def accept(self, interaction: discord.Interaction,
-                         button: discord.ui.Button):
+        @discord.ui.button(label="✅", style=discord.ButtonStyle.success)
+        async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
             user = interaction.user.name
-            self.remove_from_all(user)  # Erst überall raus
-            self.accepted.append(user)  # Dann hinzufügen
+            if user in self.accepted:
+                # ✅ User ist schon Accepted -> NICHTS machen
+                await interaction.response.defer()  # Antwort abschließen ohne Fehler
+                return
+            # ❌ User muss wechseln
+            self.remove_from_all(user)
+            self.accepted.append(user)
             await interaction.response.edit_message(embed=self.build_embed())
 
-        @discord.ui.button(label="❌ Decline", style=discord.ButtonStyle.danger)
-        async def decline(self, interaction: discord.Interaction,
-                          button: discord.ui.Button):
+
+        @discord.ui.button(label="❌", style=discord.ButtonStyle.danger)
+        async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
             user = interaction.user.name
+            if user in self.declined:
+                await interaction.response.defer()
+                return
             self.remove_from_all(user)
             self.declined.append(user)
             await interaction.response.edit_message(embed=self.build_embed())
 
-        @discord.ui.button(label="❓ Tentative",
-                           style=discord.ButtonStyle.primary)
-        async def tentative(self, interaction: discord.Interaction,
-                            button: discord.ui.Button):
+        @discord.ui.button(label="❓", style=discord.ButtonStyle.primary)
+        async def tentative(self, interaction: discord.Interaction, button: discord.ui.Button):
             user = interaction.user.name
+            if user in self.tentatived:
+                await interaction.response.defer()
+                return
             self.remove_from_all(user)
             self.tentatived.append(user)
             await interaction.response.edit_message(embed=self.build_embed())
+
 
         def build_embed(self):
             description_text = self.match_text
@@ -65,13 +74,13 @@ class MatchSignup(commands.Cog):
                                   description=description_text,
                                   color=discord.Color.blue())
 
-            embed.add_field(name="✅ Accepted",
+            embed.add_field(name="Accepted ✅",
                             value="\n".join(self.accepted) or "None",
                             inline=True)
-            embed.add_field(name="❌ Declined",
+            embed.add_field(name="Declined ❌",
                             value="\n".join(self.declined) or "None",
                             inline=True)
-            embed.add_field(name="❓ Tentative",
+            embed.add_field(name="Tentative ❓",
                             value="\n".join(self.tentatived) or "None",
                             inline=True)
             return embed
