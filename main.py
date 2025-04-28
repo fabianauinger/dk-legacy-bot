@@ -29,7 +29,7 @@ async def on_ready():
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
     
     # Sessions laden und Views wieder registrieren
-    sessions = load_sessions()
+    sessions = await load_sessions()
     for session in sessions:
         view = SignupView(
             title=session["title"],
