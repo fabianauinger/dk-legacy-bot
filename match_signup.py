@@ -88,6 +88,13 @@ class MatchSignup(commands.Cog):
                             value="\n".join(self.tentatived) or "None",
                             inline=True)
             return embed
+        
+        async def log_action(self, interaction: discord.Interaction, action: str):
+            log_channel = interaction.guild.get_channel(TICK_LOGGING_CHANNEL_ID)
+            if log_channel:
+                await log_channel.send(
+                    f"🛎️ [{self.match_title}] - {interaction.user.name} hat auf {action} geklickt!."
+                )
 
     @commands.command()
     async def creatematch(self,
@@ -128,12 +135,7 @@ class MatchSignup(commands.Cog):
 async def setup(bot):
     await bot.add_cog(MatchSignup(bot))
 
-async def log_action(self, interaction: discord.Interaction, action: str):
-    log_channel = interaction.guild.get_channel(TICK_LOGGING_CHANNEL_ID)
-    if log_channel:
-        await log_channel.send(
-            f"🛎️ [{self.match_title}] - {interaction.user.name} hat auf {action} geklickt!."
-        )
+
 
 
 
