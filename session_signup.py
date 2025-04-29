@@ -109,6 +109,7 @@ class SessionSignup(commands.Cog):
             # Datum + Uhrzeit zusammenbauen
             dt_string = f"{date} {time}"  # z.B. "28.04.2025 20:00"
             dt = datetime.strptime(dt_string, "%d.%m.%Y %H:%M")
+            print(f'Parsed datetime: {dt}')
 
             # Deutsche Zeitzone setzen
             dt = dt.replace(tzinfo=ZoneInfo("Europe/Berlin"))

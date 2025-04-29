@@ -16,7 +16,7 @@ DEPLOYMENT_LOGGING_CHANNEL_ID = 1366461721098715186
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
-    await bot.load_extension("match_signup")
+    await bot.load_extension("session_signup")
     log_channel = bot.get_channel(DEPLOYMENT_LOGGING_CHANNEL_ID)
     if log_channel:
         from datetime import datetime
