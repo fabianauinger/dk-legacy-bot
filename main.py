@@ -16,6 +16,7 @@ EVENTS_CHANNEL_ID = 1366482974270558320
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
+intents.guilds = True  # Wichtig für Interaktionen
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -74,6 +75,7 @@ async def clearall(ctx):
     await ctx.channel.purge()
 
 async def main():
+    print("MAIN")
     await bot.load_extension("session_signup")
     await bot.start(DISCORD_TOKEN)
 
