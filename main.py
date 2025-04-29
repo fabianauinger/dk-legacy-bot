@@ -1,6 +1,8 @@
 import discord
 import os
 from discord.ext import commands
+from zoneinfo import ZoneInfo
+from datetime import datetime
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -19,8 +21,9 @@ async def on_ready():
     await bot.load_extension("session_signup")
     log_channel = bot.get_channel(DEPLOYMENT_LOGGING_CHANNEL_ID)
     if log_channel:
-        from datetime import datetime
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
+        now = datetime.now(ZoneInfo("Europe/Berlin"))
+        timestamp = now.strftime("%d.%m.%Y %H:%M")
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
 
 
