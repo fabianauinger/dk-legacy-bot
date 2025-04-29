@@ -1,31 +1,112 @@
 import discord
-import json
-import os
 from discord.ext import commands
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from signup_view import SignupView
+
 
 DEV_CHANNEL_ID = 1366432462284128276
-EVENTS_CHANNEL_ID = 1366482974270558320
-SESSIONS_FILE = "sessions.json"
+TICK_LOGGING_CHANNEL_ID = 1366458949657690123
 
 class SessionSignup(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
+    class SignupView(discord.ui.View):
+
+        def __init__(self, session_title, session_text, timestamp_text=None):
+            super().__init__(timeout=None)
+            self.accepted = []
+            self.declined = []
+            self.tentatived = []
+            self.session_title = session_title
+            self.session_text = session_text
+            self.timestamp_text = timestamp_text
+
+        def remove_from_all(self, username):
+            if username in self.accepted:
+                self.accepted.remove(username)
+            if username in self.declined:
+                self.declined.remove(username)
+            if username in self.tentatived:
+                self.tentatived.remove(username)
+
+        @discord.ui.button(label="✅", style=discord.ButtonStyle.success)
+        async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+            user = interaction.user.name
+            if user in self.accepted:
+                # ✅ User ist schon Accepted -> NICHTS machen
+                await interaction.response.defer()  # Antwort abschließen ohne Fehler
+                return
+            # ❌ User muss wechseln
+            self.remove_from_all(user)
+            self.accepted.append(user)
+            await self.log_action(interaction, button.label)
+            await interaction.response.edit_message(embed=self.build_embed())
+
+
+        @discord.ui.button(label="❌", style=discord.ButtonStyle.danger)
+        async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
+            user = interaction.user.name
+            if user in self.declined:
+                await interaction.response.defer()
+                return
+            self.remove_from_all(user)
+            self.declined.append(user)
+            await self.log_action(interaction, button.label)
+            await interaction.response.edit_message(embed=self.build_embed())
+
+        @discord.ui.button(label="❓", style=discord.ButtonStyle.primary)
+        async def tentative(self, interaction: discord.Interaction, button: discord.ui.Button):
+            user = interaction.user.name
+            if user in self.tentatived:
+                await interaction.response.defer()
+                return
+            self.remove_from_all(user)
+            self.tentatived.append(user)
+            await self.log_action(interaction, button.label)
+            await interaction.response.edit_message(embed=self.build_embed())
+
+
+        def build_embed(self):
+            description_text = self.session_text
+            if self.timestamp_text:
+                # Zeit + Sessionbeschreibung + 2 Leerzeilen + ZeroWidthSpace
+                description_text = f"{self.session_text}\n\n🕒 {self.timestamp_text}\n\u200b"
+
+            embed = discord.Embed(title=self.session_title,
+                                  description=description_text,
+                                  color=discord.Color.blue())
+
+            embed.add_field(name="Accepted ✅",
+                            value="\n".join(self.accepted) or "None",
+                            inline=True)
+            embed.add_field(name="Declined ❌",
+                            value="\n".join(self.declined) or "None",
+                            inline=True)
+            embed.add_field(name="Tentative ❓",
+                            value="\n".join(self.tentatived) or "None",
+                            inline=True)
+            return embed
+        
+        async def log_action(self, interaction: discord.Interaction, action: str):
+            log_channel = interaction.guild.get_channel(TICK_LOGGING_CHANNEL_ID)
+            if log_channel:
+                await log_channel.send(
+                    f"[{self.session_title}] - {interaction.user.name} hat auf {action} geklickt!."
+                )
+
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def createsession(self,
                           ctx,
-                          title: str,
+                          session_title: str,
                           date: str,
                           time: str,
                           *,
-                          match_text="React to join!"):
+                          session_text="React to join!"):
         try:
-            # Datum + Uhrzeit zusammenbauen!
+            # Datum + Uhrzeit zusammenbauen
             dt_string = f"{date} {time}"  # z.B. "28.04.2025 20:00"
             dt = datetime.strptime(dt_string, "%d.%m.%Y %H:%M")
 
@@ -37,25 +118,14 @@ class SessionSignup(commands.Cog):
             timestamp_text = f"<t:{timestamp}:f> — <t:{timestamp}:R>"
 
             # Beschreibung formatieren
-            smart_text = match_text.replace("|", "\n").strip()
+            smart_text = session_text.replace("|", "\n").strip()
 
-            id_suffix = title.lower().replace(" ", "_").replace("-", "_")
-
-            view = SignupView(title, smart_text, timestamp_text)
+            view = self.SignupView(session_title, smart_text, timestamp_text)
             embed = view.build_embed()
             await ctx.send(embed=embed, view=view)
 
-            # Speichere das Event im Event Channel
-            events_channel = ctx.guild.get_channel(EVENTS_CHANNEL_ID)
-            if events_channel:
-                await events_channel.send(
-                    f"id_suffix: {id_suffix}\n"
-                    f"title: {title}\n"
-                    f"match_text_raw: {match_text.replace('\n', '|')}\n"
-                    f"timestamp_text: {timestamp_text}")
-
             if ctx.channel.id != DEV_CHANNEL_ID:
-                await ctx.message.delete() # <<< Diese Zeile löscht den !creatematch Befehl danach ✅ (wenn außerhalb des dev-channels)
+                await ctx.message.delete() # <<< Diese Zeile löscht den !createsession Befehl danach ✅ (nur wenn außerhalb des dev-channels)
 
         except ValueError:
             await ctx.send(
@@ -65,8 +135,3 @@ class SessionSignup(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(SessionSignup(bot))
-
-
-
-
-
