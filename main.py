@@ -3,6 +3,9 @@ import os
 from discord.ext import commands
 from zoneinfo import ZoneInfo
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv() 
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -10,10 +13,10 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-DISCORD_TOKEN = os.environ['DISCORD_TOKEN']
-ARRIVALS_CHANNEL_ID = 1365770366819242045
-DEPARTURES_CHANNEL_ID = 1366018627584655481
-DEPLOYMENT_LOGGING_CHANNEL_ID = 1366461721098715186
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+ARRIVALS_CHANNEL_ID = int(os.getenv('ARRIVALS_CHANNEL_ID'))
+DEPARTURES_CHANNEL_ID = int(os.getenv('DEPARTURES_CHANNEL_ID'))
+DEPLOYMENT_LOGGING_CHANNEL_ID = int(os.getenv('DEPLOYMENT_LOGGING_CHANNEL_ID'))
 
 @bot.event
 async def on_ready():
@@ -22,8 +25,15 @@ async def on_ready():
     log_channel = bot.get_channel(DEPLOYMENT_LOGGING_CHANNEL_ID)
     if log_channel:
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M")
-        now = datetime.now(ZoneInfo("Europe/Berlin"))
+        try:
+            from zoneinfo import ZoneInfo
+            now = datetime.now(ZoneInfo("Europe/Berlin"))
+        except Exception as e:
+            print(f"⚠️ Zeitzonenfehler: {e}")
+            now = datetime.now()
+
         timestamp = now.strftime("%d.%m.%Y %H:%M")
+
         await log_channel.send(f"🚀 DK Legacy Bot wurde neu deployed ({timestamp})")
 
 

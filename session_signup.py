@@ -1,11 +1,15 @@
 import discord
+import os
 from discord.ext import commands
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from dotenv import load_dotenv
+
+load_dotenv() 
 
 
-DEV_CHANNEL_ID = 1366432462284128276
-TICK_LOGGING_CHANNEL_ID = 1366458949657690123
+DEV_CHANNEL_ID = int(os.getenv('DEV_CHANNEL_ID'))
+TICK_LOGGING_CHANNEL_ID = int(os.getenv('TICK_LOGGING_CHANNEL_ID'))
 
 class SessionSignup(commands.Cog):
 
